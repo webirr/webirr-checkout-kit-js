@@ -1,0 +1,21 @@
+{
+  "name": "webirr-checkout-kit-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Workspace for WeBirr online checkout kit packages.",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "tsc -b packages/core packages/next packages/js",
+    "build:example": "npm --workspace examples/nextjs-mock run build",
+    "clean": "tsc -b --clean packages/core packages/next packages/js examples/nextjs-mock",
+    "test": "npm run build && node --test packages/core/dist/**/*.test.js packages/next/dist/**/*.test.js packages/js/dist/**/*.test.js",
+    "test:core": "tsc -b packages/core && node --test packages/core/dist/**/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@webirr/checkout-next",
+  "version": "0.1.0",
+  "description": "Next.js route helpers for the WeBirr Checkout Kit.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/index.js",
+    "dist/index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "npm run build && node --test dist/**/*.test.js"
+  },
+  "dependencies": {
+    "@webirr/checkout-core": "0.1.0"
+  },
+  "license": "MIT"
+}

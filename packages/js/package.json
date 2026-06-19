@@ -1,0 +1,21 @@
+{
+  "name": "@webirr/checkout-js",
+  "version": "0.1.0",
+  "description": "Browser drop-in UI for WeBirr online checkout.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/index.js",
+    "dist/index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "npm run build && node --test dist/**/*.test.js"
+  },
+  "dependencies": {
+    "@webirr/checkout-core": "0.1.0"
+  },
+  "license": "MIT"
+}

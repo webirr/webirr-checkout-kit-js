@@ -1,0 +1,12 @@
+node_modules/
+packages/*/dist/
+examples/*/.next/
+*.tsbuildinfo
+.DS_Store
+.env
+.env.*
+!.env.example
+examples/*/.env
+examples/*/.env.*
+!examples/*/.env.example
+*.tgz
