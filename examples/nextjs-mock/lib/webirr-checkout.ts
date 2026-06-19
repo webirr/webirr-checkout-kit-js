@@ -130,8 +130,8 @@ class MockGateway implements WeBirrGatewayClient {
 class LiveWeBirrGateway implements WeBirrGatewayClient {
   private readonly client: SdkWeBirrClient;
 
-  constructor(merchantId: string, apiKey: string, gatewayBaseUrl?: string) {
-    this.client = new webirrSdk.WeBirrClient(merchantId, apiKey, true, createGatewayHttpClient(gatewayBaseUrl));
+  constructor(merchantId: string, apiKey: string, isTestEnv: boolean, gatewayBaseUrl?: string) {
+    this.client = new webirrSdk.WeBirrClient(merchantId, apiKey, isTestEnv, createGatewayHttpClient(gatewayBaseUrl));
   }
 
   async createBill(bill: WeBirrBillRequest): Promise<ApiResponse<string>> {
@@ -158,6 +158,8 @@ class LiveWeBirrGateway implements WeBirrGatewayClient {
     return await this.client.getSupportedBanks() as SdkApiResponse<SdkSupportedBank[]>;
   }
 }
+
+type CheckoutGatewayMode = "mock" | "testenv" | "prod";
 
 type SdkHttpRequest = {
   method?: string;
@@ -196,19 +198,54 @@ function createGatewayHttpClient(gatewayBaseUrl?: string) {
 }
 
 function createGateway(): WeBirrGatewayClient {
-  if (process.env.WEBIRR_CHECKOUT_MODE !== "live") {
+  const mode = checkoutGatewayMode();
+  if (mode === "mock") {
     return new MockGateway();
   }
 
-  const merchantId = process.env.WEBIRR_TEST_ENV_MERCHANT_ID || process.env.WEBIRR_MERCHANT_ID;
-  const apiKey = process.env.WEBIRR_TEST_ENV_API_KEY || process.env.WEBIRR_API_KEY;
+  const isTestEnv = mode === "testenv";
+  const merchantId = firstEnv(
+    isTestEnv
+      ? ["WEBIRR_TEST_ENV_MERCHANT_ID", "WEBIRR_MERCHANT_ID"]
+      : ["WEBIRR_PROD_MERCHANT_ID", "WEBIRR_MERCHANT_ID"]
+  );
+  const apiKey = firstEnv(
+    isTestEnv
+      ? ["WEBIRR_TEST_ENV_API_KEY", "WEBIRR_API_KEY"]
+      : ["WEBIRR_PROD_API_KEY", "WEBIRR_API_KEY"]
+  );
   const gatewayBaseUrl = process.env.WEBIRR_GATEWAY_BASE_URL;
 
   if (!merchantId || !apiKey) {
-    throw new Error("Live WeBirr TestEnv mode requires WEBIRR_TEST_ENV_MERCHANT_ID and WEBIRR_TEST_ENV_API_KEY.");
+    throw new Error(
+      isTestEnv
+        ? "WeBirr TestEnv mode requires WEBIRR_TEST_ENV_MERCHANT_ID and WEBIRR_TEST_ENV_API_KEY."
+        : "WeBirr ProdEnv mode requires WEBIRR_PROD_MERCHANT_ID and WEBIRR_PROD_API_KEY."
+    );
   }
 
-  return new LiveWeBirrGateway(merchantId, apiKey, gatewayBaseUrl);
+  return new LiveWeBirrGateway(merchantId, apiKey, isTestEnv, gatewayBaseUrl);
+}
+
+function checkoutGatewayMode(): CheckoutGatewayMode {
+  const mode = (process.env.WEBIRR_CHECKOUT_MODE || "mock").trim().toLowerCase();
+  if (mode === "live") {
+    return "testenv";
+  }
+  if (mode === "mock" || mode === "testenv" || mode === "prod") {
+    return mode;
+  }
+  throw new Error("WEBIRR_CHECKOUT_MODE must be one of: mock, testenv, prod.");
+}
+
+function firstEnv(names: string[]): string {
+  for (const name of names) {
+    const value = process.env[name]?.trim();
+    if (value) {
+      return value;
+    }
+  }
+  return "";
 }
 
 const checkout = createWeBirrCheckout({
