@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
+  buildReceiptUrl,
   buildStatusUrl,
   mountWebirrCheckout,
   requestCheckout,
@@ -58,6 +59,33 @@ describe("checkout browser helpers", () => {
     const url = buildStatusUrl("/api/webirr/status?existing=1", "ORDER-1001");
 
     assert.equal(url, "https://merchant.test/api/webirr/status?existing=1&merchantReference=ORDER-1001");
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: originalWindow
+    });
+  });
+
+  it("builds receipt URL with payment confirmation details", () => {
+    const originalWindow = globalThis.window;
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { location: { href: "https://merchant.test/checkout" } }
+    });
+
+    const url = buildReceiptUrl("/success?existing=1", {
+      merchantReference: "ORDER-1001",
+      paymentCode: "CODE-1",
+      status: "Paid",
+      paymentStatus: 2,
+      paymentReference: "TX123",
+      paymentIssuer: "CBE Mobile",
+      paidAt: "2026-06-19 12:00"
+    });
+
+    assert.equal(
+      url,
+      "https://merchant.test/success?existing=1&paymentReference=TX123&paymentIssuer=CBE+Mobile&paidAt=2026-06-19+12%3A00"
+    );
     Object.defineProperty(globalThis, "window", {
       configurable: true,
       value: originalWindow

@@ -1,4 +1,19 @@
-export default function SuccessPage() {
+type SuccessPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function firstParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) {
+    return value[0] || "";
+  }
+  return value || "";
+}
+
+export default async function SuccessPage({ searchParams }: SuccessPageProps) {
+  const params = searchParams ? await searchParams : {};
+  const paymentReference = firstParam(params.paymentReference);
+  const paymentIssuer = firstParam(params.paymentIssuer);
+
   return (
     <main className="success-shell">
       <section className="success">
@@ -9,10 +24,18 @@ export default function SuccessPage() {
             <div>
               <h2>Payment Confirmed</h2>
               <dl className="webirr-record">
-                <dt>Payment Reference</dt>
-                <dd>Verified by merchant backend</dd>
-                <dt>Paid Via</dt>
-                <dd>WeBirr</dd>
+                {paymentReference ? (
+                  <>
+                    <dt>Payment Reference</dt>
+                    <dd>{paymentReference}</dd>
+                  </>
+                ) : null}
+                {paymentIssuer ? (
+                  <>
+                    <dt>Paid Via</dt>
+                    <dd>{paymentIssuer}</dd>
+                  </>
+                ) : null}
               </dl>
             </div>
           </div>

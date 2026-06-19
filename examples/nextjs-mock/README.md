@@ -51,5 +51,25 @@ For browser testing, you can also pass a fresh reference at runtime:
 http://localhost:3000/?merchantReference=NEXTJS-LIVE-20260618000000
 ```
 
+## Docker Compose
+
+The example directory includes a Docker Compose file for running the checkout
+against WeBirr TestEnv. It requires only the TestEnv merchant id and API key:
+
+```bash
+WEBIRR_TEST_ENV_MERCHANT_ID=replace-with-testenv-merchant-id \
+WEBIRR_TEST_ENV_API_KEY=replace-with-testenv-api-key \
+docker compose up
+```
+
+The app will be available at `http://localhost:3100` by default. Use
+`WEBIRR_CHECKOUT_EXAMPLE_PORT` to choose another local port, and optionally use
+`NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE` when you need a specific merchant
+reference for repeatable screenshots or recovery testing.
+
+When testing against a restored local gateway database, set
+`WEBIRR_GATEWAY_BASE_URL` to the local gateway URL. From Docker on macOS, use
+`http://host.docker.internal:8080`.
+
 This example does not use browser-side WeBirr credentials and does not call
 WeBirr merchant APIs from the browser.

@@ -61,6 +61,9 @@ export interface WeBirrPaymentDetail {
   paymentDate?: string;
   time?: string;
   bankID?: string;
+  bankName?: string;
+  paymentIssuer?: string;
+  issuerName?: string;
   amount?: string | number;
   wbcCode?: string;
   updateTimeStamp?: string;
@@ -456,10 +459,33 @@ function toPaymentResult(paymentCode: string, status: WeBirrPaymentStatus): WeBi
     paymentCode,
     paymentStatus: 2,
     paymentReference: status.data?.paymentReference,
-    paymentIssuer: status.data?.bankID,
+    paymentIssuer: extractPaymentIssuer(status.data),
     paidAt: status.data?.paymentDate || status.data?.time,
     raw: status
   };
+}
+
+function extractPaymentIssuer(detail: WeBirrPaymentDetail | null | undefined): string | undefined {
+  if (!detail) {
+    return undefined;
+  }
+
+  for (const key of ["bankName", "paymentIssuer", "issuerName", "bankID"]) {
+    const value = comparable(detail[key]);
+    if (value) {
+      return formatPaymentIssuer(value);
+    }
+  }
+
+  return undefined;
+}
+
+function formatPaymentIssuer(value: string): string {
+  return value
+    .split(/[\s_-]+/)
+    .filter(Boolean)
+    .map((word) => word.length <= 4 ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 }
 
 function toViewModel(

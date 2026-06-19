@@ -3,12 +3,20 @@
 import { mountWebirrCheckout, WebirrCheckoutController } from "@webirr/checkout-js";
 import { useEffect, useRef, useState } from "react";
 
-const defaultMerchantReference = process.env.NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE || "ORDER-1001";
+const configuredMerchantReference = process.env.NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE;
+
+function todayMerchantReference(): string {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = `${now.getMonth() + 1}`.padStart(2, "0");
+  const dd = `${now.getDate()}`.padStart(2, "0");
+  return `WEBIRR-CHECKOUT-JS-${yyyy}${mm}${dd}`;
+}
 
 export default function CheckoutWidget() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const controllerRef = useRef<WebirrCheckoutController | null>(null);
-  const [merchantReference, setMerchantReference] = useState(defaultMerchantReference);
+  const [merchantReference, setMerchantReference] = useState(configuredMerchantReference || todayMerchantReference);
   const [started, setStarted] = useState(false);
   const [starting, setStarting] = useState(false);
 
@@ -68,11 +76,11 @@ export default function CheckoutWidget() {
           <div className="webirr-panel-title">Checkout</div>
           <dl className="webirr-summary">
             <dt>Customer</dt>
-            <dd>Test Customer</dd>
+            <dd>Elias</dd>
             <dt>Amount</dt>
-            <dd>250.00 ETB</dd>
+            <dd>745.50 ETB</dd>
             <dt>Description</dt>
-            <dd>Order {merchantReference}</dd>
+            <dd>online checkout demo</dd>
           </dl>
           <div className="webirr-button-row">
             <button

@@ -35,13 +35,12 @@ function resolveExamplePayable(merchantReference: string): StoredPayable {
 
   const payable: StoredPayable = {
     merchantReference,
-    amount: "250.00",
+    amount: "745.50",
     currency: "ETB",
-    customerName: "Test Customer",
-    customerCode: "CUST-1001",
-    customerPhone: "0911000000",
-    description: `Order ${merchantReference}`,
-    billTime: "2026-06-18 10:00",
+    customerName: "Elias",
+    customerCode: "ELIAS-DEMO",
+    customerPhone: "",
+    description: "online checkout demo",
     successUrl: "/success",
     cancelUrl: "/"
   };
@@ -131,8 +130,8 @@ class MockGateway implements WeBirrGatewayClient {
 class LiveWeBirrGateway implements WeBirrGatewayClient {
   private readonly client: SdkWeBirrClient;
 
-  constructor(merchantId: string, apiKey: string) {
-    this.client = new webirrSdk.WeBirrClient(merchantId, apiKey, true);
+  constructor(merchantId: string, apiKey: string, gatewayBaseUrl?: string) {
+    this.client = new webirrSdk.WeBirrClient(merchantId, apiKey, true, createGatewayHttpClient(gatewayBaseUrl));
   }
 
   async createBill(bill: WeBirrBillRequest): Promise<ApiResponse<string>> {
@@ -160,6 +159,42 @@ class LiveWeBirrGateway implements WeBirrGatewayClient {
   }
 }
 
+type SdkHttpRequest = {
+  method?: string;
+  url: string;
+  headers?: Record<string, string>;
+  data?: unknown;
+};
+
+function createGatewayHttpClient(gatewayBaseUrl?: string) {
+  const baseUrl = gatewayBaseUrl?.trim().replace(/\/+$/, "");
+  if (!baseUrl) {
+    return null;
+  }
+
+  return {
+    async request(request: SdkHttpRequest) {
+      const sourceUrl = new URL(request.url);
+      const targetUrl = new URL(`${baseUrl}/${sourceUrl.pathname.replace(/^\/+/, "")}`);
+      targetUrl.search = sourceUrl.search;
+
+      const response = await fetch(targetUrl, {
+        method: request.method || "get",
+        headers: request.headers,
+        body: request.data === undefined ? undefined : JSON.stringify(request.data)
+      });
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
+
+      return {
+        status: response.status,
+        statusText: response.statusText,
+        data
+      };
+    }
+  };
+}
+
 function createGateway(): WeBirrGatewayClient {
   if (process.env.WEBIRR_CHECKOUT_MODE !== "live") {
     return new MockGateway();
@@ -167,12 +202,13 @@ function createGateway(): WeBirrGatewayClient {
 
   const merchantId = process.env.WEBIRR_TEST_ENV_MERCHANT_ID || process.env.WEBIRR_MERCHANT_ID;
   const apiKey = process.env.WEBIRR_TEST_ENV_API_KEY || process.env.WEBIRR_API_KEY;
+  const gatewayBaseUrl = process.env.WEBIRR_GATEWAY_BASE_URL;
 
   if (!merchantId || !apiKey) {
     throw new Error("Live WeBirr TestEnv mode requires WEBIRR_TEST_ENV_MERCHANT_ID and WEBIRR_TEST_ENV_API_KEY.");
   }
 
-  return new LiveWeBirrGateway(merchantId, apiKey);
+  return new LiveWeBirrGateway(merchantId, apiKey, gatewayBaseUrl);
 }
 
 const checkout = createWeBirrCheckout({

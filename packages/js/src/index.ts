@@ -58,6 +58,20 @@ export function buildStatusUrl(statusUrl: string, merchantReference: string): st
   return url.toString();
 }
 
+export function buildReceiptUrl(receiptUrl: string, status: CheckoutStatusResult): string {
+  const url = new URL(receiptUrl, window.location.href);
+  if (status.paymentReference) {
+    url.searchParams.set("paymentReference", status.paymentReference);
+  }
+  if (status.paymentIssuer) {
+    url.searchParams.set("paymentIssuer", status.paymentIssuer);
+  }
+  if (status.paidAt) {
+    url.searchParams.set("paidAt", status.paidAt);
+  }
+  return url.toString();
+}
+
 export function mountWebirrCheckout(
   container: string | HTMLElement,
   options: WebirrCheckoutDropInOptions
@@ -100,7 +114,7 @@ export function mountWebirrCheckout(
         renderPaid(rootElement, status);
         const redirectUrl = status.receiptUrl || options.successUrl || checkout?.successUrl;
         if (redirectUrl) {
-          window.location.href = redirectUrl;
+          window.location.href = buildReceiptUrl(redirectUrl, status);
         }
       } else {
         renderPending(rootElement, checkout, refresh);
