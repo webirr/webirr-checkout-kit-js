@@ -244,6 +244,9 @@ describe("getStatus", () => {
 
     assert.equal(status.status, "Pending");
     assert.equal(status.paymentStatus, 0);
+    assert.equal(status.customerName, "Test Customer");
+    assert.equal(status.amount, "250.00");
+    assert.equal(status.currency, "ETB");
   });
 
   it("marks paid idempotently after payment confirmation", async () => {
@@ -263,6 +266,9 @@ describe("getStatus", () => {
 
     assert.equal(first.status, "Paid");
     assert.equal(second.status, "Paid");
+    assert.equal(first.customerName, "Test Customer");
+    assert.equal(first.amount, "250.00");
+    assert.equal(first.currency, "ETB");
     assert.deepEqual(h.paidReferences, ["ORDER-1001"]);
   });
 });

@@ -53,6 +53,10 @@ class MockGateway implements WeBirrGatewayClient {
   private billsByPaymentCode = new Map<string, WeBirrBillResponse>();
 
   async createBill(bill: WeBirrBillRequest): Promise<ApiResponse<string>> {
+    if (bill.billReference.includes("ERROR")) {
+      return { error: "merchant denied checkout", res: null, errorCode: "DEMO_DENIED" };
+    }
+
     const paymentCode = "WEBIRR-123-456";
     const stored = {
       ...bill,
@@ -93,8 +97,8 @@ class MockGateway implements WeBirrGatewayClient {
         res: {
           status: 2,
           data: {
-            paymentReference: "MOCK-BANK-REF",
-            bankID: "mock-bank",
+            paymentReference: "TXlocal181936cbe",
+            bankName: "CBE Mobile",
             paymentDate: "2026-06-18 10:05",
             wbcCode: paymentCode
           }
@@ -119,8 +123,12 @@ class MockGateway implements WeBirrGatewayClient {
     return {
       error: null,
       res: [
-        { bankID: "cbe_mobile", name: "CBE Mobile Banking" },
-        { bankID: "telebirr", name: "Telebirr" }
+        { bankID: "cbe_mobile", name: "CBE Mobile" },
+        { bankID: "cbe_birr", name: "CBE Birr" },
+        { bankID: "awash_birr", name: "Awash Birr" },
+        { bankID: "telebirr", name: "Telebirr" },
+        { bankID: "m_pesa", name: "M-Pesa" },
+        { bankID: "coopay_ebirr", name: "Coopay Ebirr" }
       ],
       errorCode: null
     };

@@ -9,3 +9,7 @@ The gateway client must implement `getSupportedBanks()` with
 `GET /einvoice/api/banks`. `createCheckout()` includes `supportedBanks` in the
 safe checkout view model and generates instruction steps only from that
 merchant-scoped list.
+
+`getStatus()` returns safe display fields from the merchant payable so browser
+and success-page UIs can keep the standard confirmation context visible:
+Customer, Amount, Payment Reference, and Paid Via.

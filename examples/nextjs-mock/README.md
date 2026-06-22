@@ -1,5 +1,7 @@
 # WeBirr Checkout Kit Next.js Example
 
+![WeBirr Checkout Kit payment-code state](screenshots/03-payment-code-pending.png)
+
 This example demonstrates the checkout kit with a Moodle-inspired WeBirr
 checkout screen. Mock mode is the default and does not require WeBirr
 credentials.
@@ -95,3 +97,33 @@ When testing against a restored local gateway database, set
 
 This example does not use browser-side WeBirr credentials and does not call
 WeBirr merchant APIs from the browser.
+
+## Screenshots
+
+### Checkout Review
+
+The customer reviews the merchant-owned payable before the WeBirr Payment Code
+is created.
+
+![Initial checkout review](screenshots/01-initial-checkout.png)
+
+### Payment Code Waiting
+
+The checkout displays the WeBirr Payment Code and instructions generated from
+the merchant-supported bank list returned by the backend.
+
+![Payment code waiting](screenshots/03-payment-code-pending.png)
+
+### Payment Confirmed
+
+The paid state shows the standard online-checkout confirmation fields:
+Customer, Amount, Payment Reference, and Paid Via.
+
+![Payment confirmed](screenshots/04-paid-success.png)
+
+### Error And Manual Refresh
+
+Manual refresh appears only after an error. Normal polling is automatic and
+sequential.
+
+![Error and manual refresh](screenshots/02-error-manual-refresh.png)

@@ -167,6 +167,12 @@ export interface CheckoutStatusInput {
 export interface CheckoutStatusResult {
   merchantReference: string;
   paymentCode?: string;
+  amount?: string;
+  currency?: string;
+  description?: string;
+  customerName?: string;
+  customerCode?: string;
+  customerPhone?: string;
   status: PayableStatus;
   paymentStatus?: number;
   paymentReference?: string;
@@ -262,6 +268,7 @@ export function createWeBirrCheckout(options: WeBirrCheckoutOptions): WeBirrChec
     if (!paymentCode) {
       return {
         merchantReference,
+        ...statusDisplayFields(payable),
         status: "Unknown"
       };
     }
@@ -275,6 +282,7 @@ export function createWeBirrCheckout(options: WeBirrCheckoutOptions): WeBirrChec
       return {
         merchantReference,
         paymentCode,
+        ...statusDisplayFields(payable),
         status: "Paid",
         paymentStatus: 2,
         paymentReference: payment.paymentReference,
@@ -287,6 +295,7 @@ export function createWeBirrCheckout(options: WeBirrCheckoutOptions): WeBirrChec
     return {
       merchantReference,
       paymentCode,
+      ...statusDisplayFields(payable),
       status: paymentStatus === undefined ? "Unknown" : "Pending",
       paymentStatus
     };
@@ -422,6 +431,20 @@ function billChanged(existing: WeBirrBillResponse, next: WeBirrBillRequest): boo
 
 function comparable(value: unknown): string {
   return value == null ? "" : String(value).trim();
+}
+
+function statusDisplayFields(payable: MerchantPayable): Pick<
+  CheckoutStatusResult,
+  "amount" | "currency" | "description" | "customerName" | "customerCode" | "customerPhone"
+> {
+  return {
+    amount: String(payable.amount),
+    currency: payable.currency || "ETB",
+    description: payable.description || `Payment for ${payable.merchantReference}`,
+    customerName: payable.customerName,
+    customerCode: payable.customerCode,
+    customerPhone: payable.customerPhone
+  };
 }
 
 function assertNoGatewayError(response: ApiResponse<unknown>, action: string): void {

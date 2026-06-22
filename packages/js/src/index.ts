@@ -58,8 +58,26 @@ export function buildStatusUrl(statusUrl: string, merchantReference: string): st
   return url.toString();
 }
 
-export function buildReceiptUrl(receiptUrl: string, status: CheckoutStatusResult): string {
+export function buildReceiptUrl(
+  receiptUrl: string,
+  status: CheckoutStatusResult,
+  checkout?: CheckoutViewModel | null
+): string {
   const url = new URL(receiptUrl, window.location.href);
+  const customerName = status.customerName || checkout?.customerName;
+  const amount = status.amount || checkout?.amount;
+  const currency = status.currency || checkout?.currency;
+
+  url.searchParams.set("merchantReference", status.merchantReference);
+  if (customerName) {
+    url.searchParams.set("customerName", customerName);
+  }
+  if (amount) {
+    url.searchParams.set("amount", amount);
+  }
+  if (currency) {
+    url.searchParams.set("currency", currency);
+  }
   if (status.paymentReference) {
     url.searchParams.set("paymentReference", status.paymentReference);
   }
@@ -111,10 +129,10 @@ export function mountWebirrCheckout(
       options.onStatus?.(status);
       if (status.status === "Paid") {
         stopPolling();
-        renderPaid(rootElement, status);
+        renderPaid(rootElement, status, checkout);
         const redirectUrl = status.receiptUrl || options.successUrl || checkout?.successUrl;
         if (redirectUrl) {
-          window.location.href = buildReceiptUrl(redirectUrl, status);
+          window.location.href = buildReceiptUrl(redirectUrl, status, checkout);
         }
       } else {
         renderPending(rootElement, checkout, refresh);
@@ -245,7 +263,10 @@ function renderPending(
   }
 }
 
-function renderPaid(root: HTMLElement, status: CheckoutStatusResult): void {
+function renderPaid(root: HTMLElement, status: CheckoutStatusResult, checkout: CheckoutViewModel | null): void {
+  const customerName = status.customerName || checkout?.customerName;
+  const amount = formatAmount(status.amount || checkout?.amount, status.currency || checkout?.currency);
+
   root.innerHTML = `
     <div class="webirr-checkout" data-webirr-state="paid">
       ${renderStatus("success", "Your payment was successful.", false)}
@@ -254,6 +275,8 @@ function renderPaid(root: HTMLElement, status: CheckoutStatusResult): void {
         <div>
           <h2>Payment Confirmed</h2>
           <dl class="webirr-record">
+            ${customerName ? `<dt>Customer</dt><dd>${escapeHtml(customerName)}</dd>` : ""}
+            ${amount ? `<dt>Amount</dt><dd>${escapeHtml(amount)}</dd>` : ""}
             ${status.paymentReference ? `<dt>Payment Reference</dt><dd>${escapeHtml(status.paymentReference)}</dd>` : ""}
             ${status.paymentIssuer ? `<dt>Paid Via</dt><dd>${escapeHtml(status.paymentIssuer)}</dd>` : ""}
           </dl>
@@ -340,4 +363,11 @@ function escapeHtml(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function formatAmount(amount: string | undefined, currency: string | undefined): string {
+  if (!amount) {
+    return "";
+  }
+  return currency ? `${amount} ${currency}` : amount;
 }

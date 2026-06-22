@@ -75,6 +75,9 @@ describe("checkout browser helpers", () => {
     const url = buildReceiptUrl("/success?existing=1", {
       merchantReference: "ORDER-1001",
       paymentCode: "CODE-1",
+      customerName: "Elias",
+      amount: "745.50",
+      currency: "ETB",
       status: "Paid",
       paymentStatus: 2,
       paymentReference: "TX123",
@@ -84,7 +87,7 @@ describe("checkout browser helpers", () => {
 
     assert.equal(
       url,
-      "https://merchant.test/success?existing=1&paymentReference=TX123&paymentIssuer=CBE+Mobile&paidAt=2026-06-19+12%3A00"
+      "https://merchant.test/success?existing=1&merchantReference=ORDER-1001&customerName=Elias&amount=745.50&currency=ETB&paymentReference=TX123&paymentIssuer=CBE+Mobile&paidAt=2026-06-19+12%3A00"
     );
     Object.defineProperty(globalThis, "window", {
       configurable: true,
