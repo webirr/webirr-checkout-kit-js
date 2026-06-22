@@ -110,14 +110,18 @@ is created.
 ### Payment Code Waiting
 
 The checkout displays the WeBirr Payment Code and instructions generated from
-the merchant-supported bank list returned by the backend.
+the merchant-supported bank list returned by the backend. The included
+screenshot was captured from WeBirr TestEnv so it shows the real WeBirr payment
+code format.
 
 ![Payment code waiting](screenshots/03-payment-code-pending.png)
 
 ### Payment Confirmed
 
 The paid state shows the standard online-checkout confirmation fields:
-Customer, Amount, Payment Reference, and Paid Via.
+Customer, Amount, Payment Reference, and Paid Via. The included screenshot was
+captured after completing the TestEnv bill through the internal test-pay
+simulator.
 
 ![Payment confirmed](screenshots/04-paid-success.png)
 

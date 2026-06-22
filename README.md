@@ -74,6 +74,9 @@ At a glance, the payment flow is:
 ## Screenshots
 
 The Next.js example screenshots show the checkout kit in a merchant-owned app.
+The payment-code and paid-success screenshots were captured against WeBirr
+TestEnv so the visible payment code and payment reference use the real gateway
+formats.
 
 ![Initial checkout review](examples/nextjs-mock/screenshots/01-initial-checkout.png)
 
@@ -93,8 +96,10 @@ merchant backend:
 - `prod`: reads `WEBIRR_PROD_MERCHANT_ID` and `WEBIRR_PROD_API_KEY` on the
   server.
 
-Mock mode exists only for the standalone Next.js example, local screenshots,
-and CI-style checks. It should not be exposed as a production merchant setting.
+Mock mode exists only for the standalone Next.js example and CI-style checks.
+Use TestEnv mode when screenshots need to show real WeBirr payment-code and
+payment-reference formats. Mock mode should not be exposed as a production
+merchant setting.
 
 ## Development
 
