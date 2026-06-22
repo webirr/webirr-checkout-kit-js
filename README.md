@@ -1,6 +1,6 @@
 # WeBirr Checkout Kit JS
 
-![WeBirr Checkout Kit online checkout flow](examples/nextjs-mock/screenshots/03-payment-code-pending.png)
+![WeBirr Checkout Kit online checkout flow](examples/nextjs-mock/screenshots/webirr-checkout-kit-online-checkout-journey.png)
 
 JavaScript and TypeScript checkout kit for WeBirr online checkout integrations.
 It gives custom merchant applications the same WeBirr online checkout pattern
@@ -71,20 +71,12 @@ At a glance, the payment flow is:
 - The paid UI or success page shows Customer, Amount, Payment Reference, and
   Paid Via.
 
-## Screenshots
+## Screenshot Notes
 
-The Next.js example screenshots show the checkout kit in a merchant-owned app.
-The payment-code and paid-success screenshots were captured against WeBirr
-TestEnv so the visible payment code and payment reference use the real gateway
-formats.
-
-![Initial checkout review](examples/nextjs-mock/screenshots/01-initial-checkout.png)
-
-![Payment code waiting](examples/nextjs-mock/screenshots/03-payment-code-pending.png)
-
-![Payment confirmed](examples/nextjs-mock/screenshots/04-paid-success.png)
-
-![Error and manual refresh](examples/nextjs-mock/screenshots/02-error-manual-refresh.png)
+The lead screenshot shows the same three-step flow used in the WooCommerce and
+Moodle examples: checkout review, payment-code waiting, and payment
+confirmation. It was captured against WeBirr TestEnv so the visible payment code
+and payment reference use real gateway formats.
 
 ## Runtime Modes
 

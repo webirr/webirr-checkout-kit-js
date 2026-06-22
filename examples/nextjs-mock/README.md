@@ -1,6 +1,6 @@
 # WeBirr Checkout Kit Next.js Example
 
-![WeBirr Checkout Kit payment-code state](screenshots/03-payment-code-pending.png)
+![WeBirr Checkout Kit online checkout flow](screenshots/webirr-checkout-kit-online-checkout-journey.png)
 
 This example demonstrates the checkout kit with a Moodle-inspired WeBirr
 checkout screen. Mock mode is the default and does not require WeBirr
@@ -98,36 +98,16 @@ When testing against a restored local gateway database, set
 This example does not use browser-side WeBirr credentials and does not call
 WeBirr merchant APIs from the browser.
 
-## Screenshots
+## Screenshot Notes
 
-### Checkout Review
+The journey screenshot shows the same three-step flow used in the WooCommerce
+and Moodle examples: checkout review, payment-code waiting, and payment
+confirmation.
 
-The customer reviews the merchant-owned payable before the WeBirr Payment Code
-is created.
+The payment-code and paid-success states in the journey screenshot were
+captured against WeBirr TestEnv, so the payment code and payment reference use
+real gateway formats.
 
-![Initial checkout review](screenshots/01-initial-checkout.png)
-
-### Payment Code Waiting
-
-The checkout displays the WeBirr Payment Code and instructions generated from
-the merchant-supported bank list returned by the backend. The included
-screenshot was captured from WeBirr TestEnv so it shows the real WeBirr payment
-code format.
-
-![Payment code waiting](screenshots/03-payment-code-pending.png)
-
-### Payment Confirmed
-
-The paid state shows the standard online-checkout confirmation fields:
-Customer, Amount, Payment Reference, and Paid Via. The included screenshot was
-captured after completing the TestEnv bill through the internal test-pay
-simulator.
-
-![Payment confirmed](screenshots/04-paid-success.png)
-
-### Error And Manual Refresh
-
-Manual refresh appears only after an error. Normal polling is automatic and
-sequential.
-
-![Error and manual refresh](screenshots/02-error-manual-refresh.png)
+Supporting screenshot files are kept under `screenshots/` for detailed review:
+checkout review, payment-code waiting, paid confirmation, and error/manual
+refresh.
