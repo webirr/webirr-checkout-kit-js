@@ -138,8 +138,8 @@ class MockGateway implements WeBirrGatewayClient {
 class LiveWeBirrGateway implements WeBirrGatewayClient {
   private readonly client: SdkWeBirrClient;
 
-  constructor(merchantId: string, apiKey: string, isTestEnv: boolean, gatewayBaseUrl?: string) {
-    this.client = new webirrSdk.WeBirrClient(merchantId, apiKey, isTestEnv, createGatewayHttpClient(gatewayBaseUrl));
+  constructor(merchantId: string, apiKey: string, isTestEnv: boolean) {
+    this.client = new webirrSdk.WeBirrClient(merchantId, apiKey, isTestEnv);
   }
 
   async createBill(bill: WeBirrBillRequest): Promise<ApiResponse<string>> {
@@ -169,42 +169,6 @@ class LiveWeBirrGateway implements WeBirrGatewayClient {
 
 type CheckoutGatewayMode = "mock" | "testenv" | "prod";
 
-type SdkHttpRequest = {
-  method?: string;
-  url: string;
-  headers?: Record<string, string>;
-  data?: unknown;
-};
-
-function createGatewayHttpClient(gatewayBaseUrl?: string) {
-  const baseUrl = gatewayBaseUrl?.trim().replace(/\/+$/, "");
-  if (!baseUrl) {
-    return null;
-  }
-
-  return {
-    async request(request: SdkHttpRequest) {
-      const sourceUrl = new URL(request.url);
-      const targetUrl = new URL(`${baseUrl}/${sourceUrl.pathname.replace(/^\/+/, "")}`);
-      targetUrl.search = sourceUrl.search;
-
-      const response = await fetch(targetUrl, {
-        method: request.method || "get",
-        headers: request.headers,
-        body: request.data === undefined ? undefined : JSON.stringify(request.data)
-      });
-      const text = await response.text();
-      const data = text ? JSON.parse(text) : null;
-
-      return {
-        status: response.status,
-        statusText: response.statusText,
-        data
-      };
-    }
-  };
-}
-
 function createGateway(): WeBirrGatewayClient {
   const mode = checkoutGatewayMode();
   if (mode === "mock") {
@@ -222,7 +186,6 @@ function createGateway(): WeBirrGatewayClient {
       ? ["WEBIRR_TEST_ENV_API_KEY", "WEBIRR_API_KEY"]
       : ["WEBIRR_PROD_API_KEY", "WEBIRR_API_KEY"]
   );
-  const gatewayBaseUrl = process.env.WEBIRR_GATEWAY_BASE_URL;
 
   if (!merchantId || !apiKey) {
     throw new Error(
@@ -232,7 +195,7 @@ function createGateway(): WeBirrGatewayClient {
     );
   }
 
-  return new LiveWeBirrGateway(merchantId, apiKey, isTestEnv, gatewayBaseUrl);
+  return new LiveWeBirrGateway(merchantId, apiKey, isTestEnv);
 }
 
 function checkoutGatewayMode(): CheckoutGatewayMode {

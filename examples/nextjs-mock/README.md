@@ -91,10 +91,6 @@ local port, and optionally use `NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE` when you
 need a specific merchant reference for repeatable screenshots or recovery
 testing.
 
-When testing against a restored local gateway database, set
-`WEBIRR_GATEWAY_BASE_URL` to the local gateway URL. From Docker on macOS, use
-`http://host.docker.internal:8080`.
-
 This example does not use browser-side WeBirr credentials and does not call
 WeBirr merchant APIs from the browser.
 

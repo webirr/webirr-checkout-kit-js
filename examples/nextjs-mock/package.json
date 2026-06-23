@@ -14,7 +14,7 @@
     "next": "^16.0.7",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "webirr": "^1.1.1"
+    "webirr": "^2.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.7",
