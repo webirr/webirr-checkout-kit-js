@@ -9,7 +9,7 @@ import {
   SupportedBank
 } from "@webirr/checkout-core";
 import { createCheckoutPostHandler, createCheckoutStatusGetHandler } from "@webirr/checkout-next";
-import { openExampleStore } from "./example-store";
+import { sharedExampleStore } from "./example-store";
 import type {
   ApiResponse as SdkApiResponse,
   Bill as SdkBill,
@@ -26,7 +26,7 @@ type StoredPayable = MerchantPayable & {
   webirrPaymentStatus?: string | number;
 };
 
-const store = openExampleStore();
+const store = sharedExampleStore();
 
 function resolveExamplePayable(merchantReference: string): StoredPayable {
   return store.loadPayable(merchantReference) as StoredPayable;

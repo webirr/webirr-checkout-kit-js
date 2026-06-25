@@ -3,11 +3,10 @@
 ![WeBirr Checkout Kit online checkout flow](examples/checkout-nextjs-app/screenshots/webirr-checkout-kit-online-checkout-journey.png)
 
 JavaScript and TypeScript checkout kit for WeBirr online checkout integrations.
-It gives custom merchant applications the same WeBirr online checkout pattern
-used by the Moodle and WooCommerce plugins: merchant backend creates or resumes
-the WeBirr bill, browser displays the WeBirr Payment Code, browser polls only
-merchant-owned endpoints, and the merchant backend completes the payable after
-server-side WeBirr verification.
+It gives custom merchant applications the WeBirr online checkout pattern:
+merchant backend creates or resumes the WeBirr bill, browser displays the
+WeBirr Payment Code, browser polls only merchant-owned endpoints, and the
+merchant backend completes the payable after server-side WeBirr verification.
 
 This workspace contains:
 
@@ -77,10 +76,9 @@ At a glance, the payment flow is:
 
 ## Screenshot Notes
 
-The lead screenshot shows the same three-step flow used in the WooCommerce and
-Moodle examples: checkout review, payment-code waiting, and payment
-confirmation. It was captured against WeBirr TestEnv so the visible payment code
-and payment reference use real gateway formats.
+The lead screenshot shows the checkout review, payment-code waiting, and
+payment-confirmation flow. It was captured against WeBirr TestEnv so the visible
+payment code and payment reference use real gateway formats.
 
 ## Runtime Modes
 

@@ -7,10 +7,12 @@ online checkout pattern.
 
 The app shows:
 
-- a checkout review panel;
+- a 10-item audio book catalog;
+- a local checkout review panel;
 - a checkout panel that displays the WeBirr Payment Code;
 - merchant-owned create and status endpoints;
 - SQLite-backed retry and recovery state;
+- a `.txt` digital audio book receipt after paid confirmation;
 - mock mode for local UI checks;
 - optional WeBirr TestEnv or ProdEnv mode.
 
@@ -19,8 +21,10 @@ routes:
 
 | Route | Purpose |
 | --- | --- |
+| `POST /api/demo/orders` | Create a local SQLite order from selected audio book and customer name. |
 | `POST /api/webirr/checkout` | Create or resume the WeBirr payment code. |
 | `GET /api/webirr/checkout/status?merchantReference=...` | Poll status and complete the local payable when paid. |
+| `GET /api/demo/receipt?merchantReference=...` | Download the demo receipt after payment is confirmed. |
 
 The server routes use `@webirr/checkout-next`, backed by
 `@webirr/checkout-core`. Mock mode uses a local mocked gateway. TestEnv and
@@ -56,13 +60,11 @@ variables and never exposes them to the browser:
 WEBIRR_MERCHANT_ID=replace-with-testenv-merchant-id \
 WEBIRR_API_KEY=replace-with-testenv-api-key \
 WEBIRR_TEST_MODE=true \
-NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE=ord_2026_06_24_10033 \
 npm --workspace examples/checkout-nextjs-app run dev
 ```
 
-Use a fresh `NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE` when you want to create a new
-TestEnv bill instead of resuming the existing bill for the same merchant
-reference.
+The example creates a fresh local `ord_{shortuuid}` merchant reference when the
+customer clicks `Buy`.
 
 ## ProdEnv Mode
 
@@ -73,30 +75,18 @@ production credentials only on the server side:
 WEBIRR_MERCHANT_ID=replace-with-production-merchant-id \
 WEBIRR_API_KEY=replace-with-production-api-key \
 WEBIRR_TEST_MODE=false \
-NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE=ord_2026_06_24_10033 \
 npm --workspace examples/checkout-nextjs-app run dev
 ```
 
 Do not use production credentials for screenshots, local demos, or CI smoke
 checks. Use mock mode or TestEnv mode for those cases.
 
-## Demo Values
+## Demo Flow
 
-Optional local demo values:
-
-```bash
-NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE=ord_2026_06_24_10033
-WEBIRR_DEMO_AMOUNT=745.50
-WEBIRR_DEMO_DESCRIPTION="Sample Audio Book"
-WEBIRR_DEMO_CUSTOMER_NAME=Elias
-WEBIRR_DEMO_SQLITE_PATH=webirr-checkout-demo.sqlite3
-```
-
-For browser testing, you can also pass a fresh reference at runtime:
-
-```text
-http://localhost:3000/?merchantReference=ord_2026_06_24_10034
-```
+The home page shows an audio book store with 10 books. Customer name defaults
+to `Elias` and cannot be empty. The browser sends only the selected book ID and
+customer name to `POST /api/demo/orders`; the server resolves amount, currency,
+and description from the catalog and stores the order in SQLite.
 
 ## Docker Compose
 
@@ -113,10 +103,8 @@ docker compose up
 The app will be available at `http://localhost:3100` by default. Use
 `WEBIRR_TEST_MODE=true` or `WEBIRR_TEST_MODE=false` to choose TestEnv or
 ProdEnv, `WEBIRR_CHECKOUT_EXAMPLE_PORT` to choose another local port, and
-optionally use `NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE` when you need a specific
-merchant reference for repeatable screenshots or recovery testing. If
-`WEBIRR_MERCHANT_ID` and `WEBIRR_API_KEY` are omitted, the example falls back to
-mock mode.
+If `WEBIRR_MERCHANT_ID` and `WEBIRR_API_KEY` are omitted, the example falls back
+to mock mode.
 
 This example does not use browser-side WeBirr credentials and does not call
 WeBirr merchant APIs from the browser.
@@ -128,8 +116,12 @@ The example stores checkout/payment state in SQLite:
 ```text
 id
 merchant_reference
+demo_type
+item_id
+item_title
 customer_name
 amount
+currency
 description
 webirr_payment_code
 webirr_payment_status
@@ -158,9 +150,8 @@ Use the WeBirr status model:
 
 ## Screenshot Notes
 
-The journey screenshot shows the same three-step flow used in the WooCommerce,
-Moodle, and Go checkout examples: checkout review, payment-code waiting, and
-payment confirmation.
+The journey screenshot shows the checkout review, payment-code waiting, and
+payment-confirmation flow.
 
 The payment-code and paid-success states in the journey screenshot were
 captured against WeBirr TestEnv, so the payment code and payment reference use

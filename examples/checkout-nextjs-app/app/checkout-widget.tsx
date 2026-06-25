@@ -3,42 +3,47 @@
 import { mountWebirrCheckout, WebirrCheckoutController } from "@webirr/checkout-js";
 import { useEffect, useRef, useState } from "react";
 
-const configuredMerchantReference = process.env.NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE;
+type DemoBook = {
+  id: string;
+  title: string;
+  description: string;
+  amount: string;
+  currency: string;
+};
 
-function todayMerchantReference(): string {
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = `${now.getMonth() + 1}`.padStart(2, "0");
-  const dd = `${now.getDate()}`.padStart(2, "0");
-  return `ord_${yyyy}_${mm}_${dd}_10033`;
-}
+type DemoOrder = {
+  merchantReference: string;
+  itemTitle: string;
+  amount: string;
+  currency: string;
+  customerName: string;
+  description: string;
+  successUrl: string;
+  cancelUrl: string;
+};
 
-export default function CheckoutWidget() {
+type CheckoutWidgetProps = {
+  books: DemoBook[];
+};
+
+export default function CheckoutWidget({ books }: CheckoutWidgetProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const controllerRef = useRef<WebirrCheckoutController | null>(null);
-  const [merchantReference, setMerchantReference] = useState(configuredMerchantReference || todayMerchantReference);
+  const [customerName, setCustomerName] = useState("Elias");
+  const [order, setOrder] = useState<DemoOrder | null>(null);
   const [started, setStarted] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const requestedReference = new URLSearchParams(window.location.search).get("merchantReference")?.trim();
-    if (requestedReference && requestedReference !== merchantReference) {
-      setMerchantReference(requestedReference);
-      setStarted(false);
-      setStarting(false);
-    }
-  }, [merchantReference]);
-
-  useEffect(() => {
-    if (!containerRef.current) {
+    if (!containerRef.current || !order) {
       return;
     }
-
     controllerRef.current = mountWebirrCheckout(containerRef.current, {
-      merchantReference,
+      merchantReference: order.merchantReference,
       createUrl: "/api/webirr/checkout",
       statusUrl: "/api/webirr/checkout/status",
-      successUrl: "/success",
+      successUrl: order.successUrl,
       cancelUrl: "/",
       pollIntervalMs: 1200,
       showStartButton: false,
@@ -53,7 +58,29 @@ export default function CheckoutWidget() {
     return () => {
       controllerRef.current?.destroy();
     };
-  }, [merchantReference]);
+  }, [order]);
+
+  async function handleBuy(bookId: string) {
+    const normalizedCustomer = customerName.trim();
+    if (!normalizedCustomer) {
+      setError("Customer name is required.");
+      return;
+    }
+    setError("");
+    setStarted(false);
+    setStarting(false);
+    const response = await fetch("/api/demo/orders", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ bookId, customerName: normalizedCustomer })
+    });
+    const data = await response.json();
+    if (!response.ok || data.error) {
+      setError(data.error || "Could not create order.");
+      return;
+    }
+    setOrder(data as DemoOrder);
+  }
 
   async function handleStart() {
     setStarted(true);
@@ -71,18 +98,44 @@ export default function CheckoutWidget() {
         </div>
       </div>
 
+      {!order ? (
+        <section className="webirr-panel">
+          <div className="webirr-panel-title">Audio Book Store</div>
+          {error ? <div className="webirr-error">{error}</div> : null}
+          <label className="webirr-field">
+            <span>Customer</span>
+            <input value={customerName} onChange={(event) => setCustomerName(event.target.value)} required />
+          </label>
+          <div className="webirr-catalog-grid">
+            {books.map((book) => (
+              <article className="webirr-book-card" key={book.id}>
+                <div>
+                  <h2>{book.title}</h2>
+                  <p>{book.description}</p>
+                  <strong>{book.amount} {book.currency}</strong>
+                </div>
+                <button type="button" className="webirr-primary-button" onClick={() => void handleBuy(book.id)}>
+                  Buy
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : (
       <div className="webirr-layout">
         <section className="webirr-panel">
           <div className="webirr-panel-title">Checkout</div>
           <dl className="webirr-summary">
             <dt>Customer</dt>
-            <dd>Elias</dd>
+            <dd>{order.customerName}</dd>
+            <dt>Audio book</dt>
+            <dd>{order.itemTitle}</dd>
             <dt>Amount</dt>
-            <dd>745.50 ETB</dd>
+            <dd>{order.amount} {order.currency}</dd>
             <dt>Description</dt>
-            <dd>Sample Audio Book</dd>
+            <dd>{order.description}</dd>
             <dt>Merchant reference</dt>
-            <dd>{merchantReference}</dd>
+            <dd>{order.merchantReference}</dd>
           </dl>
           <div className="webirr-button-row">
             <button
@@ -93,12 +146,13 @@ export default function CheckoutWidget() {
             >
               Checkout
             </button>
-            <a href="/" className="webirr-secondary-button">Cancel</a>
+            <button type="button" className="webirr-secondary-button" onClick={() => setOrder(null)}>Cancel</button>
           </div>
         </section>
 
         <section className="webirr-panel" ref={containerRef} />
       </div>
+      )}
     </main>
   );
 }

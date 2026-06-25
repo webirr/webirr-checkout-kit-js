@@ -11,6 +11,7 @@ function firstParam(value: string | string[] | undefined): string {
 
 export default async function SuccessPage({ searchParams }: SuccessPageProps) {
   const params = searchParams ? await searchParams : {};
+  const merchantReference = firstParam(params.merchantReference);
   const customerName = firstParam(params.customerName);
   const amount = firstParam(params.amount);
   const currency = firstParam(params.currency);
@@ -56,6 +57,9 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
             </div>
           </div>
           <div className="success-actions">
+            {merchantReference ? (
+              <a href={`/api/demo/receipt?merchantReference=${encodeURIComponent(merchantReference)}`}>Download receipt</a>
+            ) : null}
             <a href="/">Continue</a>
           </div>
         </div>

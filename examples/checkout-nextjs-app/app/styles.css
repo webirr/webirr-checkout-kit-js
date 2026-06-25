@@ -118,6 +118,59 @@ body {
   margin-top: 16px;
 }
 
+.webirr-field {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 18px;
+  font-weight: 700;
+}
+
+.webirr-field input {
+  width: min(420px, 100%);
+  min-height: 42px;
+  border: 1px solid var(--webirr-line);
+  border-radius: 6px;
+  padding: 9px 12px;
+  font: inherit;
+}
+
+.webirr-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.webirr-book-card {
+  display: grid;
+  gap: 16px;
+  align-content: space-between;
+  min-height: 220px;
+  border: 1px solid var(--webirr-line);
+  border-radius: 8px;
+  padding: 16px;
+  background: #fff;
+}
+
+.webirr-book-card h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.webirr-book-card p {
+  margin: 0 0 12px;
+  color: var(--webirr-muted);
+}
+
+.webirr-error {
+  border: 1px solid var(--webirr-danger-border);
+  border-radius: 8px;
+  background: var(--webirr-danger-bg);
+  padding: 11px 13px;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
 .webirr-primary-button,
 .webirr-secondary-button,
 .success a {
