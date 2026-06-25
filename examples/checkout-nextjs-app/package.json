@@ -1,11 +1,12 @@
 {
-  "name": "@webirr/checkout-example-nextjs-mock",
+  "name": "@webirr/checkout-example-nextjs-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "node --test lib/*.test.mjs"
   },
   "dependencies": {
     "@webirr/checkout-core": "0.1.0",

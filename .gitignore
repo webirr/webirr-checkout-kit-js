@@ -10,3 +10,5 @@ examples/*/.env
 examples/*/.env.*
 !examples/*/.env.example
 *.tgz
+*.sqlite3
+*.sqlite3-*

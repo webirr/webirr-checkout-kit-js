@@ -9,8 +9,9 @@
   ],
   "scripts": {
     "build": "tsc -b packages/core packages/next packages/js",
-    "build:example": "npm --workspace examples/nextjs-mock run build",
-    "clean": "tsc -b --clean packages/core packages/next packages/js examples/nextjs-mock",
+    "build:example": "npm --workspace examples/checkout-nextjs-app run build",
+    "test:example": "npm --workspace examples/checkout-nextjs-app test",
+    "clean": "tsc -b --clean packages/core packages/next packages/js examples/checkout-nextjs-app",
     "test": "npm run build && node --test packages/core/dist/**/*.test.js packages/next/dist/**/*.test.js packages/js/dist/**/*.test.js",
     "test:core": "tsc -b packages/core && node --test packages/core/dist/**/*.test.js"
   },

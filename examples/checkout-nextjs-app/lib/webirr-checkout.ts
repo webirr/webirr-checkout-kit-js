@@ -9,6 +9,7 @@ import {
   SupportedBank
 } from "@webirr/checkout-core";
 import { createCheckoutPostHandler, createCheckoutStatusGetHandler } from "@webirr/checkout-next";
+import { openExampleStore } from "./example-store";
 import type {
   ApiResponse as SdkApiResponse,
   Bill as SdkBill,
@@ -21,43 +22,27 @@ import type {
 const webirrSdk = require("webirr") as typeof import("webirr");
 
 type StoredPayable = MerchantPayable & {
-  paid?: boolean;
-  pollCount?: number;
+  webirrPaymentCode?: string;
+  webirrPaymentStatus?: string | number;
 };
 
-const payables = new Map<string, StoredPayable>();
+const store = openExampleStore();
 
 function resolveExamplePayable(merchantReference: string): StoredPayable {
-  const existing = payables.get(merchantReference);
-  if (existing) {
-    return existing;
-  }
-
-  const payable: StoredPayable = {
-    merchantReference,
-    amount: "745.50",
-    currency: "ETB",
-    customerName: "Elias",
-    customerCode: "ELIAS-DEMO",
-    customerPhone: "",
-    description: "online checkout demo",
-    successUrl: "/success",
-    cancelUrl: "/"
-  };
-  payables.set(merchantReference, payable);
-  return payable;
+  return store.loadPayable(merchantReference) as StoredPayable;
 }
 
 class MockGateway implements WeBirrGatewayClient {
   private billsByReference = new Map<string, WeBirrBillResponse>();
   private billsByPaymentCode = new Map<string, WeBirrBillResponse>();
+  private statusCallsByPaymentCode = new Map<string, number>();
 
   async createBill(bill: WeBirrBillRequest): Promise<ApiResponse<string>> {
     if (bill.billReference.includes("ERROR")) {
       return { error: "merchant denied checkout", res: null, errorCode: "DEMO_DENIED" };
     }
 
-    const paymentCode = "WEBIRR-123-456";
+    const paymentCode = mockPaymentCode(bill.billReference);
     const stored = {
       ...bill,
       wbcCode: paymentCode,
@@ -84,22 +69,21 @@ class MockGateway implements WeBirrGatewayClient {
 
   async getPaymentStatus(paymentCode: string): Promise<ApiResponse<WeBirrPaymentStatus>> {
     const bill = this.billsByPaymentCode.get(paymentCode);
-    const payable = bill?.billReference ? resolveExamplePayable(bill.billReference) : undefined;
-    if (!payable) {
+    if (!bill?.billReference) {
       return { error: "not found", res: null, errorCode: "NOT_FOUND" };
     }
 
-    payable.pollCount = (payable.pollCount || 0) + 1;
-    if (payable.pollCount >= 3 || payable.paid) {
-      payable.paid = true;
+    const pollCount = (this.statusCallsByPaymentCode.get(paymentCode) || 0) + 1;
+    this.statusCallsByPaymentCode.set(paymentCode, pollCount);
+    if (pollCount >= 3) {
       return {
         error: null,
         res: {
           status: 2,
           data: {
-            paymentReference: "TXlocal181936cbe",
+            paymentReference: "TX9f7eli77683004b489b9e99",
             bankName: "CBE Mobile",
-            paymentDate: "2026-06-18 10:05",
+            paymentDate: "2026-06-24 10:30",
             wbcCode: paymentCode
           }
         },
@@ -167,56 +151,37 @@ class LiveWeBirrGateway implements WeBirrGatewayClient {
   }
 }
 
-type CheckoutGatewayMode = "mock" | "testenv" | "prod";
-
 function createGateway(): WeBirrGatewayClient {
-  const mode = checkoutGatewayMode();
-  if (mode === "mock") {
+  const merchantId = firstEnv("WEBIRR_MERCHANT_ID");
+  const apiKey = firstEnv("WEBIRR_API_KEY");
+  if (!merchantId && !apiKey) {
     return new MockGateway();
   }
 
-  const isTestEnv = mode === "testenv";
-  const merchantId = firstEnv(
-    isTestEnv
-      ? ["WEBIRR_TEST_ENV_MERCHANT_ID", "WEBIRR_MERCHANT_ID"]
-      : ["WEBIRR_PROD_MERCHANT_ID", "WEBIRR_MERCHANT_ID"]
-  );
-  const apiKey = firstEnv(
-    isTestEnv
-      ? ["WEBIRR_TEST_ENV_API_KEY", "WEBIRR_API_KEY"]
-      : ["WEBIRR_PROD_API_KEY", "WEBIRR_API_KEY"]
-  );
-
   if (!merchantId || !apiKey) {
-    throw new Error(
-      isTestEnv
-        ? "WeBirr TestEnv mode requires WEBIRR_TEST_ENV_MERCHANT_ID and WEBIRR_TEST_ENV_API_KEY."
-        : "WeBirr ProdEnv mode requires WEBIRR_PROD_MERCHANT_ID and WEBIRR_PROD_API_KEY."
-    );
+    throw new Error("Real WeBirr gateway mode requires WEBIRR_MERCHANT_ID and WEBIRR_API_KEY.");
   }
 
+  const isTestEnv = envBoolDefault("WEBIRR_TEST_MODE", true);
   return new LiveWeBirrGateway(merchantId, apiKey, isTestEnv);
 }
 
-function checkoutGatewayMode(): CheckoutGatewayMode {
-  const mode = (process.env.WEBIRR_CHECKOUT_MODE || "mock").trim().toLowerCase();
-  if (mode === "live") {
-    return "testenv";
+function envBoolDefault(name: string, defaultValue: boolean): boolean {
+  const value = process.env[name]?.trim().toLowerCase();
+  if (!value) {
+    return defaultValue;
   }
-  if (mode === "mock" || mode === "testenv" || mode === "prod") {
-    return mode;
+  if (["1", "true", "yes", "y", "on"].includes(value)) {
+    return true;
   }
-  throw new Error("WEBIRR_CHECKOUT_MODE must be one of: mock, testenv, prod.");
+  if (["0", "false", "no", "n", "off"].includes(value)) {
+    return false;
+  }
+  throw new Error(`${name} must be true or false.`);
 }
 
-function firstEnv(names: string[]): string {
-  for (const name of names) {
-    const value = process.env[name]?.trim();
-    if (value) {
-      return value;
-    }
-  }
-  return "";
+function firstEnv(name: string): string {
+  return process.env[name]?.trim() || "";
 }
 
 const checkout = createWeBirrCheckout({
@@ -229,16 +194,22 @@ const checkout = createWeBirrCheckout({
       return resolveExamplePayable(merchantReference);
     },
     async savePaymentCode(merchantReference, paymentCode) {
-      const payable = resolveExamplePayable(merchantReference);
-      payable.webirrPaymentCode = paymentCode;
+      store.savePaymentCode(merchantReference, paymentCode);
     },
     async markPaid(merchantReference, paymentResult) {
-      const payable = resolveExamplePayable(merchantReference);
-      payable.paid = true;
-      payable.webirrPaymentStatus = paymentResult.paymentStatus;
+      store.markPaid(merchantReference, paymentResult);
     }
   }
 });
 
 export const POST = createCheckoutPostHandler({ checkout });
 export const GET = createCheckoutStatusGetHandler({ checkout });
+
+function mockPaymentCode(merchantReference: string): string {
+  let hash = 0;
+  for (const char of merchantReference) {
+    hash = (hash * 31 + char.charCodeAt(0)) % 900000000;
+  }
+  const digits = String(100000000 + hash).slice(0, 9);
+  return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+}

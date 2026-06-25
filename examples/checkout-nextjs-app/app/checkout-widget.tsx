@@ -10,7 +10,7 @@ function todayMerchantReference(): string {
   const yyyy = now.getFullYear();
   const mm = `${now.getMonth() + 1}`.padStart(2, "0");
   const dd = `${now.getDate()}`.padStart(2, "0");
-  return `WEBIRR-CHECKOUT-JS-${yyyy}${mm}${dd}`;
+  return `ord_${yyyy}_${mm}_${dd}_10033`;
 }
 
 export default function CheckoutWidget() {
@@ -80,7 +80,9 @@ export default function CheckoutWidget() {
             <dt>Amount</dt>
             <dd>745.50 ETB</dd>
             <dt>Description</dt>
-            <dd>online checkout demo</dd>
+            <dd>Sample Audio Book</dd>
+            <dt>Merchant reference</dt>
+            <dd>{merchantReference}</dd>
           </dl>
           <div className="webirr-button-row">
             <button

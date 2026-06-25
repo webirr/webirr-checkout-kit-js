@@ -1,6 +1,6 @@
 # WeBirr Checkout Kit JS
 
-![WeBirr Checkout Kit online checkout flow](examples/nextjs-mock/screenshots/webirr-checkout-kit-online-checkout-journey.png)
+![WeBirr Checkout Kit online checkout flow](examples/checkout-nextjs-app/screenshots/webirr-checkout-kit-online-checkout-journey.png)
 
 JavaScript and TypeScript checkout kit for WeBirr online checkout integrations.
 It gives custom merchant applications the same WeBirr online checkout pattern
@@ -17,8 +17,9 @@ This workspace contains:
   routes.
 - `@webirr/checkout-js`: browser checkout drop-in that calls only merchant
   endpoints.
-- `examples/nextjs-mock`: runnable Next.js example with mocked mode plus
-  optional WeBirr TestEnv and ProdEnv modes.
+- `examples/checkout-nextjs-app`: runnable Next.js checkout web app example with
+  SQLite retry/recovery state, mock mode by default, and optional WeBirr TestEnv
+  and ProdEnv modes.
 
 ## How The Integration Works
 
@@ -38,6 +39,9 @@ idempotently.
 
 The durable checkout key is `merchantReference`. No browser-facing checkout ID
 is required for the baseline flow.
+
+The runnable example stores local merchant checkout state in SQLite so retries
+and restarts reuse the same `merchantReference -> WeBirr Payment Code` mapping.
 
 ## WeBirr Payment Flow
 
@@ -83,10 +87,10 @@ and payment reference use real gateway formats.
 Production merchant integrations should use only real WeBirr modes on the
 merchant backend:
 
-- `testenv`: reads `WEBIRR_TEST_ENV_MERCHANT_ID` and
-  `WEBIRR_TEST_ENV_API_KEY` on the server.
-- `prod`: reads `WEBIRR_PROD_MERCHANT_ID` and `WEBIRR_PROD_API_KEY` on the
-  server.
+- TestEnv: set `WEBIRR_MERCHANT_ID`, `WEBIRR_API_KEY`, and
+  `WEBIRR_TEST_MODE=true` on the server.
+- ProdEnv: set `WEBIRR_MERCHANT_ID`, `WEBIRR_API_KEY`, and
+  `WEBIRR_TEST_MODE=false` on the server.
 
 Mock mode exists only for the standalone Next.js example and CI-style checks.
 Use TestEnv mode when screenshots need to show real WeBirr payment-code and
@@ -107,17 +111,22 @@ Run package tests:
 npm test
 ```
 
+Run the SQLite example store tests:
+
+```sh
+npm run test:example
+```
+
 Build the Next.js example:
 
 ```sh
 npm run build:example
 ```
 
-The example can run without WeBirr credentials in mocked mode. TestEnv mode
-uses `WEBIRR_TEST_ENV_MERCHANT_ID` and `WEBIRR_TEST_ENV_API_KEY` from the local
-server environment. ProdEnv mode uses `WEBIRR_PROD_MERCHANT_ID` and
-`WEBIRR_PROD_API_KEY` from the server environment. Do not expose those values as
-browser `NEXT_PUBLIC_*` variables.
+The example can run without WeBirr credentials in mock mode. Real gateway modes
+use `WEBIRR_MERCHANT_ID`, `WEBIRR_API_KEY`, and `WEBIRR_TEST_MODE` from the
+local server environment. Do not expose those values as browser `NEXT_PUBLIC_*`
+variables.
 
 ## Release Status
 
