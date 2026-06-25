@@ -76,9 +76,10 @@ At a glance, the payment flow is:
 
 ## Screenshot Notes
 
-The lead screenshot shows the checkout review, payment-code waiting, and
-payment-confirmation flow. It was captured against WeBirr TestEnv so the visible
-payment code and payment reference use real gateway formats.
+The lead screenshot shows the example customer flow from audio book catalog to
+checkout review, payment-code waiting, and payment confirmation. Example
+screenshots should show only display-safe checkout data and should be captured
+in mock mode or TestEnv mode, not ProdEnv.
 
 ## Runtime Modes
 

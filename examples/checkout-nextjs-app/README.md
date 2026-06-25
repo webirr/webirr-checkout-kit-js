@@ -88,6 +88,43 @@ to `Elias` and cannot be empty. The browser sends only the selected book ID and
 customer name to `POST /api/demo/orders`; the server resolves amount, currency,
 and description from the catalog and stores the order in SQLite.
 
+The visible flow is:
+
+```text
+Catalog -> Checkout Review -> WeBirr Payment Code -> Payment Confirmed -> Receipt
+```
+
+## Screenshots
+
+### Audio Book Catalog
+
+The customer starts from the audio book catalog, enters a customer name, and
+chooses a book with **Buy**.
+
+![Audio book catalog](screenshots/00-audio-book-catalog.png)
+
+### Checkout Review
+
+The checkout review shows the merchant-owned payable before WeBirr checkout
+starts. Payment instructions remain informational until the checkout creates the
+payment code.
+
+![Checkout review](screenshots/01-checkout-review.png)
+
+### Payment Code Display
+
+The checkout panel displays the **WeBirr Payment Code**, supported payment
+instructions, merchant reference, and pending status.
+
+![Payment code display](screenshots/02-payment-code-pending.png)
+
+### Payment Confirmation
+
+After server-side payment verification, the success page shows the payment
+reference, paid-via value, and receipt download link.
+
+![Payment confirmation](screenshots/03-payment-confirmed.png)
+
 ## Docker Compose
 
 The example directory includes a Docker Compose file for running the checkout
@@ -147,19 +184,6 @@ Use the WeBirr status model:
 2 paid
 3 reversed/canceled
 ```
-
-## Screenshot Notes
-
-The journey screenshot shows the checkout review, payment-code waiting, and
-payment-confirmation flow.
-
-The payment-code and paid-success states in the journey screenshot were
-captured against WeBirr TestEnv, so the payment code and payment reference use
-real gateway formats.
-
-Supporting screenshot files are kept under `screenshots/` for detailed review:
-checkout review, payment-code waiting, paid confirmation, and error/manual
-refresh.
 
 ## Validate
 
