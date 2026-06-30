@@ -1,24 +1,17 @@
 services:
   web:
-    image: node:22-alpine
-    working_dir: /workspace
-    command: sh -c "npm ci && npm --workspace examples/checkout-nextjs-app run build && npm --workspace examples/checkout-nextjs-app run start -- --hostname 0.0.0.0"
+    build:
+      context: ../..
+      dockerfile: examples/checkout-nextjs-app/Dockerfile
     ports:
-      - "${WEBIRR_CHECKOUT_EXAMPLE_PORT:-3100}:3000"
+      - "3100:3000"
     environment:
       WEBIRR_MERCHANT_ID: ${WEBIRR_MERCHANT_ID:-}
       WEBIRR_API_KEY: ${WEBIRR_API_KEY:-}
       WEBIRR_TEST_MODE: ${WEBIRR_TEST_MODE:-true}
-      NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE: ${NEXT_PUBLIC_WEBIRR_EXAMPLE_REFERENCE:-}
-      WEBIRR_DEMO_SQLITE_PATH: ${WEBIRR_DEMO_SQLITE_PATH:-/workspace/examples/checkout-nextjs-app/webirr-checkout-demo.sqlite3}
-      WEBIRR_DEMO_AMOUNT: ${WEBIRR_DEMO_AMOUNT:-745.50}
-      WEBIRR_DEMO_DESCRIPTION: ${WEBIRR_DEMO_DESCRIPTION:-Sample Audio Book}
-      WEBIRR_DEMO_CUSTOMER_NAME: ${WEBIRR_DEMO_CUSTOMER_NAME:-Elias}
     volumes:
-      - ../../:/workspace:cached
-      - webirr_checkout_node_modules:/workspace/node_modules
-      - webirr_checkout_next:/workspace/examples/checkout-nextjs-app/.next
+      - webirr_checkout_data:/app/data
+    restart: unless-stopped
 
 volumes:
-  webirr_checkout_node_modules:
-  webirr_checkout_next:
+  webirr_checkout_data:

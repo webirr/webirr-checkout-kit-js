@@ -1,0 +1,10 @@
+.git
+node_modules
+**/node_modules
+**/.next
+**/dist
+**/*.tsbuildinfo
+**/*.sqlite3
+npm-debug.log*
+Dockerfile
+docker-compose.yml

@@ -1,4 +1,6 @@
 const { DatabaseSync } = loadNodeSQLite();
+const fs = require("node:fs");
+const path = require("node:path");
 const { findBook, newMerchantReference } = require("./catalog.js");
 
 let sharedStore;
@@ -229,6 +231,10 @@ function rowToReceipt(row) {
 }
 
 function sqlitePath() {
+  const dockerDataDir = "/app/data";
+  if (fs.existsSync(dockerDataDir) && fs.statSync(dockerDataDir).isDirectory()) {
+    return path.join(dockerDataDir, "webirr-checkout-demo.sqlite3");
+  }
   return "webirr-checkout-demo.sqlite3";
 }
 

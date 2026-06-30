@@ -233,14 +233,16 @@ function renderLoading(root: HTMLElement): void {
 }
 
 function renderCheckout(root: HTMLElement, checkout: CheckoutViewModel, refresh: () => Promise<void>): void {
+  const amount = formatAmount(checkout.amount, checkout.currency);
   root.innerHTML = `
     <div class="webirr-checkout" data-webirr-state="pending">
       <div class="payment-code-title">WeBirr Payment Code</div>
       <div class="payment-code-large" data-webirr-payment-code>${escapeHtml(checkout.paymentCode)}</div>
       ${renderStatus("info", "Waiting for payment confirmation...", true)}
       ${renderInstructions(instructionsFromSupportedBanks(checkout.supportedBanks, checkout.instructions.title))}
-      <div class="payment-detail">Checking payment status in about 5 seconds.</div>
       <dl class="webirr-record">
+        ${checkout.customerName ? `<dt>Customer</dt><dd>${escapeHtml(checkout.customerName)}</dd>` : ""}
+        ${amount ? `<dt>Amount</dt><dd>${escapeHtml(amount)}</dd>` : ""}
         <dt>Merchant reference</dt>
         <dd>${escapeHtml(checkout.merchantReference)}</dd>
         <dt>Payment Status</dt>

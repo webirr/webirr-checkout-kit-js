@@ -74,12 +74,32 @@ At a glance, the payment flow is:
 - The paid UI or success page shows Customer, Amount, Payment Reference, and
   Paid Via.
 
-## Screenshot Notes
+### Detailed Flow
 
-The lead screenshot shows the example customer flow from audio book catalog to
-checkout review, payment-code waiting, and payment confirmation. Example
-screenshots should show only display-safe checkout data and should be captured
-in mock mode or TestEnv mode, not ProdEnv.
+1. A customer opens the audio book catalog and enters a customer name.
+2. The customer chooses an audio book with **Buy**.
+3. The Next.js example backend validates the selected book, resolves amount,
+   currency, customer, and description from the server-side catalog, and creates
+   a local SQLite order with a stable `merchantReference`.
+4. The browser shows the checkout review for that `merchantReference`.
+5. When the customer starts checkout, the browser posts only the
+   `merchantReference` to `POST /api/webirr/checkout`.
+6. The merchant backend loads the payable from the local store, creates or
+   resumes the WeBirr bill, saves the `merchantReference -> WeBirr Payment Code`
+   mapping, and returns only display-safe checkout fields.
+7. The browser drop-in displays the **WeBirr Payment Code**, pending status,
+   merchant reference, and payment instructions generated from the merchant's
+   `supportedBanks`.
+8. The customer opens a mobile banking or wallet app integrated with WeBirr and
+   follows: `{Banking App} -> WeBirr menu -> Enter Payment Code -> Pay`.
+9. The browser polls
+   `GET /api/webirr/checkout/status?merchantReference=...`. The merchant backend
+   resolves status from WeBirr status polling or local payment state.
+10. When paid status is verified, the merchant backend calls `markPaid`
+    idempotently, stores the payment reference and paid-via value, and returns
+    the paid confirmation fields.
+11. The customer sees the payment confirmation and can download the demo audio
+    book receipt.
 
 ## Runtime Modes
 
@@ -127,9 +147,11 @@ use `WEBIRR_MERCHANT_ID`, `WEBIRR_API_KEY`, and `WEBIRR_TEST_MODE` from the
 local server environment. Do not expose those values as browser `NEXT_PUBLIC_*`
 variables.
 
-## Release Status
+For VPS or Dokploy deployment, use the example Compose file. It builds the local
+Dockerfile, exposes port `3100`, passes only the three WeBirr gateway variables,
+and stores SQLite payment state in a named volume:
 
-This kit is not released publicly yet. Before npm release, configure trusted
-publishing for `@webirr/checkout-core`, `@webirr/checkout-next`, and
-`@webirr/checkout-js`, run package dry-runs, and verify clean install/import
-from npm after publish.
+```sh
+cd examples/checkout-nextjs-app
+docker compose up --build
+```

@@ -20,9 +20,14 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
   const formattedAmount = amount ? `${amount}${currency ? ` ${currency}` : ""}` : "";
 
   return (
-    <main className="success-shell">
+    <main className="webirr-checkout-shell">
+      <div className="webirr-topbar">
+        <div className="webirr-brand">
+          <img src="/webirr-cute-logo.png" alt="WeBirr" className="webirr-brand-logo" />
+          <h1>Payment Complete</h1>
+        </div>
+      </div>
       <section className="success">
-        <h1>Your payment was successful.</h1>
         <div className="success-body">
           <div className="success-card">
             <div className="webirr-confirmation-icon" aria-hidden="true">✓</div>
@@ -54,13 +59,12 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
                   </>
                 ) : null}
               </dl>
+              <div className="success-actions">
+                {merchantReference ? (
+                  <a href={`/api/demo/receipt?merchantReference=${encodeURIComponent(merchantReference)}`}>Download receipt</a>
+                ) : null}
+              </div>
             </div>
-          </div>
-          <div className="success-actions">
-            {merchantReference ? (
-              <a href={`/api/demo/receipt?merchantReference=${encodeURIComponent(merchantReference)}`}>Download receipt</a>
-            ) : null}
-            <a href="/">Continue</a>
           </div>
         </div>
       </section>

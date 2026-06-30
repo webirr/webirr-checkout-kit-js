@@ -26,10 +26,12 @@ type StoredPayable = MerchantPayable & {
   webirrPaymentStatus?: string | number;
 };
 
-const store = sharedExampleStore();
-
 function resolveExamplePayable(merchantReference: string): StoredPayable {
-  return store.loadPayable(merchantReference) as StoredPayable;
+  return exampleStore().loadPayable(merchantReference) as StoredPayable;
+}
+
+function exampleStore() {
+  return sharedExampleStore();
 }
 
 class MockGateway implements WeBirrGatewayClient {
@@ -194,10 +196,10 @@ const checkout = createWeBirrCheckout({
       return resolveExamplePayable(merchantReference);
     },
     async savePaymentCode(merchantReference, paymentCode) {
-      store.savePaymentCode(merchantReference, paymentCode);
+      exampleStore().savePaymentCode(merchantReference, paymentCode);
     },
     async markPaid(merchantReference, paymentResult) {
-      store.markPaid(merchantReference, paymentResult);
+      exampleStore().markPaid(merchantReference, paymentResult);
     }
   }
 });

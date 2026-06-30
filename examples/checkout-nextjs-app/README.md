@@ -8,7 +8,7 @@ online checkout pattern.
 The app shows:
 
 - a 10-item audio book catalog;
-- a local checkout review panel;
+- a local order review panel;
 - a checkout panel that displays the WeBirr Payment Code;
 - merchant-owned create and status endpoints;
 - SQLite-backed retry and recovery state;
@@ -91,7 +91,7 @@ and description from the catalog and stores the order in SQLite.
 The visible flow is:
 
 ```text
-Catalog -> Checkout Review -> WeBirr Payment Code -> Payment Confirmed -> Receipt
+Catalog -> Order Review -> WeBirr Payment Code -> Payment Confirmed -> Receipt
 ```
 
 ## Screenshots
@@ -103,13 +103,11 @@ chooses a book with **Buy**.
 
 ![Audio book catalog](screenshots/00-audio-book-catalog.png)
 
-### Checkout Review
+### Order Review
 
-The checkout review shows the merchant-owned payable before WeBirr checkout
-starts. Payment instructions remain informational until the checkout creates the
-payment code.
+The order review shows the merchant-owned payable before WeBirr checkout starts.
 
-![Checkout review](screenshots/01-checkout-review.png)
+![Order review](screenshots/01-checkout-review.png)
 
 ### Payment Code Display
 
@@ -125,10 +123,11 @@ reference, paid-via value, and receipt download link.
 
 ![Payment confirmation](screenshots/03-payment-confirmed.png)
 
-## Docker Compose
+## Docker Compose / Dokploy
 
-The example directory includes a Docker Compose file for running the checkout
-against WeBirr TestEnv by default when merchant credentials are supplied:
+For VPS deployment through Dokploy, use the Compose file in this example
+directory. Compose is the deployment entrypoint and builds the example image from
+the local Dockerfile:
 
 ```bash
 WEBIRR_MERCHANT_ID=replace-with-testenv-merchant-id \
@@ -137,11 +136,12 @@ WEBIRR_TEST_MODE=true \
 docker compose up
 ```
 
-The app will be available at `http://localhost:3100` by default. Use
+The app will be available at `http://localhost:3100`. Use
 `WEBIRR_TEST_MODE=true` or `WEBIRR_TEST_MODE=false` to choose TestEnv or
-ProdEnv, `WEBIRR_CHECKOUT_EXAMPLE_PORT` to choose another local port, and
-If `WEBIRR_MERCHANT_ID` and `WEBIRR_API_KEY` are omitted, the example falls back
-to mock mode.
+ProdEnv. If `WEBIRR_MERCHANT_ID` and `WEBIRR_API_KEY` are omitted, the example
+falls back to mock mode. Compose passes only the three WeBirr gateway variables
+and stores SQLite state in the `webirr_checkout_data` volume mounted at
+`/app/data`, so payment-code retry/recovery state survives container restarts.
 
 This example does not use browser-side WeBirr credentials and does not call
 WeBirr merchant APIs from the browser.

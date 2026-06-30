@@ -36,16 +36,17 @@ export default function CheckoutWidget({ books }: CheckoutWidgetProps) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!containerRef.current || !order) {
+    if (!containerRef.current || !order || !started) {
       return;
     }
-    controllerRef.current = mountWebirrCheckout(containerRef.current, {
+    const controller = mountWebirrCheckout(containerRef.current, {
       merchantReference: order.merchantReference,
       createUrl: "/api/webirr/checkout",
       statusUrl: "/api/webirr/checkout/status",
       successUrl: order.successUrl,
       cancelUrl: "/",
       pollIntervalMs: 1200,
+      autoStart: true,
       showStartButton: false,
       instructions: {
         title: "Payment Instruction"
@@ -54,11 +55,16 @@ export default function CheckoutWidget({ books }: CheckoutWidgetProps) {
         setStarting(false);
       }
     });
+    controllerRef.current = controller;
+    setStarting(false);
 
     return () => {
-      controllerRef.current?.destroy();
+      controller.destroy();
+      if (controllerRef.current === controller) {
+        controllerRef.current = null;
+      }
     };
-  }, [order]);
+  }, [order, started]);
 
   async function handleBuy(bookId: string) {
     const normalizedCustomer = customerName.trim();
@@ -69,6 +75,8 @@ export default function CheckoutWidget({ books }: CheckoutWidgetProps) {
     setError("");
     setStarted(false);
     setStarting(false);
+    controllerRef.current?.destroy();
+    controllerRef.current = null;
     const response = await fetch("/api/demo/orders", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -82,11 +90,10 @@ export default function CheckoutWidget({ books }: CheckoutWidgetProps) {
     setOrder(data as DemoOrder);
   }
 
-  async function handleStart() {
-    setStarted(true);
+  function handleStart() {
+    setError("");
     setStarting(true);
-    await controllerRef.current?.start();
-    setStarting(false);
+    setStarted(true);
   }
 
   return (
@@ -121,10 +128,9 @@ export default function CheckoutWidget({ books }: CheckoutWidgetProps) {
             ))}
           </div>
         </section>
-      ) : (
-      <div className="webirr-layout">
+      ) : !started ? (
         <section className="webirr-panel">
-          <div className="webirr-panel-title">Checkout</div>
+          <div className="webirr-panel-title">Order Review</div>
           <dl className="webirr-summary">
             <dt>Customer</dt>
             <dd>{order.customerName}</dd>
@@ -142,16 +148,14 @@ export default function CheckoutWidget({ books }: CheckoutWidgetProps) {
               type="button"
               className="webirr-primary-button"
               disabled={started || starting}
-              onClick={() => void handleStart()}
+              onClick={handleStart}
             >
-              Checkout
+              Pay with WeBirr
             </button>
-            <button type="button" className="webirr-secondary-button" onClick={() => setOrder(null)}>Cancel</button>
           </div>
         </section>
-
+      ) : (
         <section className="webirr-panel" ref={containerRef} />
-      </div>
       )}
     </main>
   );
