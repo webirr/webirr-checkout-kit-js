@@ -56,9 +56,9 @@ describe("checkout browser helpers", () => {
       value: { location: { href: "https://merchant.test/checkout" } }
     });
 
-    const url = buildStatusUrl("/api/webirr/status?existing=1", "ORDER-1001");
+    const url = buildStatusUrl("/api/webirr/checkout/status?existing=1", "ORDER-1001");
 
-    assert.equal(url, "https://merchant.test/api/webirr/status?existing=1&merchantReference=ORDER-1001");
+    assert.equal(url, "https://merchant.test/api/webirr/checkout/status?existing=1&merchantReference=ORDER-1001");
     Object.defineProperty(globalThis, "window", {
       configurable: true,
       value: originalWindow
@@ -110,7 +110,7 @@ describe("checkout browser helpers", () => {
 
     const status = await requestCheckoutStatus({
       merchantReference: "ORDER-1001",
-      statusUrl: "/api/webirr/status",
+      statusUrl: "/api/webirr/checkout/status",
       fetch: fetcher
     });
 
@@ -161,7 +161,7 @@ describe("checkout browser helpers", () => {
     const controller = mountWebirrCheckout(root, {
       merchantReference: "ORDER-1001",
       createUrl: "/api/webirr/checkout",
-      statusUrl: "/api/webirr/status",
+      statusUrl: "/api/webirr/checkout/status",
       fetch: async (_input, init) => {
         if (init?.method === "POST") {
           return response({
