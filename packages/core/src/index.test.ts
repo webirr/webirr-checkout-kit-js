@@ -17,6 +17,8 @@ class FakeGateway implements WeBirrGatewayClient {
   billsByReference = new Map<string, WeBirrBillResponse>();
   billsByPaymentCode = new Map<string, WeBirrBillResponse>();
   statuses = new Map<string, WeBirrPaymentStatus>();
+  createBillError?: Error;
+  createBillResponse?: ApiResponse<string>;
   supportedBanksResponse: ApiResponse<SupportedBank[]> = {
     error: null,
     res: [
@@ -27,7 +29,9 @@ class FakeGateway implements WeBirrGatewayClient {
   };
 
   async createBill(bill: WeBirrBillRequest): Promise<ApiResponse<string>> {
+    if (this.createBillError) throw this.createBillError;
     this.createdBills.push(bill);
+    if (this.createBillResponse) return this.createBillResponse;
     const code = `CODE-${this.createdBills.length}`;
     const response = {
       ...bill,
@@ -233,6 +237,33 @@ describe("createCheckout", () => {
 
     assert.deepEqual(view.supportedBanks, []);
     assert.deepEqual(view.instructions.steps, []);
+  });
+
+  it("propagates platform errors without rewriting them as business errors", async () => {
+    const gateway = new FakeGateway();
+    const expected = new Error("connection reset");
+    gateway.createBillError = expected;
+    const h = harness(payable(), gateway);
+
+    await assert.rejects(
+      () => h.checkout.createCheckout({ merchantReference: "ORDER-1001" }),
+      (error) => error === expected
+    );
+  });
+
+  it("keeps WeBirr business errors on the ApiResponse path", async () => {
+    const gateway = new FakeGateway();
+    gateway.createBillResponse = {
+      error: "invalid amount",
+      errorCode: "INVALID_AMOUNT",
+      res: null
+    };
+    const h = harness(payable(), gateway);
+
+    await assert.rejects(
+      () => h.checkout.createCheckout({ merchantReference: "ORDER-1001" }),
+      /Could not create bill: invalid amount/
+    );
   });
 });
 
